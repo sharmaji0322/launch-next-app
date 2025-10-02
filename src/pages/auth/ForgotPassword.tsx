@@ -4,97 +4,161 @@ import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
-import { toast } from "sonner";
-import { Plane, ArrowLeft } from "lucide-react";
+import { useToast } from "@/hooks/use-toast";
+import { Plane, ArrowLeft, Loader2 } from "lucide-react";
+import { z } from "zod";
+
+const emailSchema = z.object({
+  email: z.string().email("Invalid email address"),
+});
 
 const ForgotPassword = () => {
+  const { toast } = useToast();
   const [email, setEmail] = useState("");
   const [isLoading, setIsLoading] = useState(false);
-  const [isEmailSent, setIsEmailSent] = useState(false);
+  const [emailSent, setEmailSent] = useState(false);
 
   const handleResetPassword = async (e: React.FormEvent) => {
     e.preventDefault();
-    setIsLoading(true);
 
     try {
+      const validation = emailSchema.safeParse({ email });
+      if (!validation.success) {
+        toast({
+          title: "Validation Error",
+          description: validation.error.errors[0].message,
+          variant: "destructive",
+        });
+        return;
+      }
+
+      setIsLoading(true);
+      const redirectUrl = `${window.location.origin}/auth/reset-password`;
+
       const { error } = await supabase.auth.resetPasswordForEmail(email, {
-        redirectTo: `${window.location.origin}/auth/reset-password`,
+        redirectTo: redirectUrl,
       });
 
-      if (error) throw error;
+      if (error) {
+        toast({
+          title: "Error",
+          description: error.message,
+          variant: "destructive",
+        });
+        setIsLoading(false);
+        return;
+      }
 
-      setIsEmailSent(true);
-      toast.success("Password reset email sent! Please check your inbox.");
-    } catch (error: any) {
-      toast.error(error.message || "Failed to send reset email");
+      setEmailSent(true);
+      toast({
+        title: "Success",
+        description: "Password reset instructions sent to your email.",
+      });
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "An unexpected error occurred. Please try again.",
+        variant: "destructive",
+      });
     } finally {
       setIsLoading(false);
     }
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-primary/10 via-secondary/5 to-background p-4">
-      <Card className="w-full max-w-md">
-        <CardHeader className="space-y-1 text-center">
+    <div className="min-h-screen flex items-center justify-center px-4 py-12 sm:px-6 lg:px-8 bg-gradient-to-br from-primary/5 via-secondary/5 to-background">
+      <div className="w-full max-w-md space-y-8">
+        <div className="text-center">
           <div className="flex justify-center mb-4">
-            <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center">
+            <div className="w-12 h-12 rounded-lg bg-primary/10 flex items-center justify-center">
               <Plane className="w-6 h-6 text-primary" />
             </div>
           </div>
-          <CardTitle className="text-2xl font-heading font-bold">
-            {isEmailSent ? "Check your email" : "Forgot password?"}
-          </CardTitle>
-          <CardDescription>
-            {isEmailSent
-              ? "We've sent you instructions to reset your password"
-              : "Enter your email address and we'll send you a link to reset your password"}
-          </CardDescription>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          {!isEmailSent ? (
-            <form onSubmit={handleResetPassword} className="space-y-4">
-              <div className="space-y-2">
-                <Label htmlFor="email">Email</Label>
-                <Input
-                  id="email"
-                  type="email"
-                  placeholder="you@example.com"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  required
-                  className="h-11"
-                />
-              </div>
-              <Button type="submit" className="w-full h-11" disabled={isLoading}>
-                {isLoading ? "Sending..." : "Send reset link"}
-              </Button>
-            </form>
-          ) : (
+          <h1 className="font-heading text-3xl font-bold">Forgot Password?</h1>
+          <p className="mt-2 text-muted-foreground">
+            {emailSent
+              ? "Check your email for reset instructions"
+              : "Enter your email to reset your password"}
+          </p>
+        </div>
+
+        {!emailSent ? (
+          <form onSubmit={handleResetPassword} className="mt-8 space-y-6">
+            <div>
+              <Label htmlFor="email">Email Address</Label>
+              <Input
+                id="email"
+                type="email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                placeholder="you@example.com"
+                required
+                className="mt-1"
+                disabled={isLoading}
+              />
+            </div>
+
+            <Button
+              type="submit"
+              className="w-full h-11"
+              disabled={isLoading}
+            >
+              {isLoading ? (
+                <>
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  Sending...
+                </>
+              ) : (
+                "Send Reset Link"
+              )}
+            </Button>
+
+            <div className="text-center">
+              <Link
+                to="/auth/login"
+                className="inline-flex items-center text-sm text-primary hover:underline"
+              >
+                <ArrowLeft className="mr-2 h-4 w-4" />
+                Back to login
+              </Link>
+            </div>
+          </form>
+        ) : (
+          <div className="space-y-6">
+            <div className="rounded-lg bg-primary/10 p-4 text-center">
+              <p className="text-sm text-foreground">
+                We've sent password reset instructions to <strong>{email}</strong>
+              </p>
+            </div>
+
             <div className="text-center space-y-4">
               <p className="text-sm text-muted-foreground">
                 Didn't receive the email? Check your spam folder or try again.
               </p>
               <Button
                 variant="outline"
-                className="w-full h-11"
-                onClick={() => setIsEmailSent(false)}
+                onClick={() => {
+                  setEmailSent(false);
+                  setEmail("");
+                }}
+                className="w-full"
               >
-                Try again
+                Try Again
               </Button>
             </div>
-          )}
-        </CardContent>
-        <CardFooter className="flex justify-center">
-          <Link
-            to="/auth/login"
-            className="text-sm text-muted-foreground hover:text-foreground flex items-center gap-1"
-          >
-            <ArrowLeft className="w-4 h-4" />
-            Back to login
-          </Link>
-        </CardFooter>
-      </Card>
+
+            <div className="text-center">
+              <Link
+                to="/auth/login"
+                className="inline-flex items-center text-sm text-primary hover:underline"
+              >
+                <ArrowLeft className="mr-2 h-4 w-4" />
+                Back to login
+              </Link>
+            </div>
+          </div>
+        )}
+      </div>
     </div>
   );
 };

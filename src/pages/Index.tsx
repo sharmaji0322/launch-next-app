@@ -1,10 +1,69 @@
+import { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { Plane, MapPin, Calendar, Shield } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
+import { supabase } from "@/integrations/supabase/client";
+import { User } from "@supabase/supabase-js";
+import { toast } from "sonner";
+
 
 const Index = () => {
+  const navigate = useNavigate();
+  const [user, setUser] = useState<User | null>(null);
+
+  useEffect(() => {
+    // Check current session
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      setUser(session?.user ?? null);
+    });
+
+    // Listen for auth changes
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+      setUser(session?.user ?? null);
+    });
+
+    return () => subscription.unsubscribe();
+  }, []);
+
+  const handleSignOut = async () => {
+    await supabase.auth.signOut();
+    toast.success("Signed out successfully");
+  };
+
   return (
     <div className="min-h-screen bg-background">
+      {/* Header */}
+      <header className="border-b">
+        <div className="container mx-auto px-4 py-4 flex justify-between items-center">
+          <div className="flex items-center gap-2">
+            <Plane className="w-6 h-6 text-primary" />
+            <span className="font-heading text-xl font-bold">TravelTrek</span>
+          </div>
+          <div className="flex gap-2">
+            {user ? (
+              <>
+                <span className="text-sm text-muted-foreground flex items-center">
+                  {user.email}
+                </span>
+                <Button variant="outline" onClick={handleSignOut}>
+                  Sign Out
+                </Button>
+              </>
+            ) : (
+              <>
+                <Button variant="outline" onClick={() => navigate("/auth/login")}>
+                  Sign In
+                </Button>
+                <Button onClick={() => navigate("/auth/register")}>
+                  Get Started
+                </Button>
+              </>
+            )}
+          </div>
+        </div>
+      </header>
+
       {/* Hero Section */}
       <section className="relative overflow-hidden bg-gradient-to-br from-primary/10 via-secondary/5 to-background">
         <div className="container mx-auto px-4 py-20 md:py-32">
@@ -19,8 +78,12 @@ const Index = () => {
               Plan, organize, and enjoy your trips seamlessly. From itinerary management to real-time updates, everything you need in one dynamic platform.
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
-              <Button size="lg" className="min-w-[160px] h-12 text-base font-medium">
-                Get Started
+              <Button 
+                size="lg" 
+                className="min-w-[160px] h-12 text-base font-medium"
+                onClick={() => navigate(user ? "/dashboard" : "/auth/register")}
+              >
+                {user ? "Go to Dashboard" : "Get Started"}
               </Button>
               <Button size="lg" variant="outline" className="min-w-[160px] h-12 text-base font-medium">
                 Learn More

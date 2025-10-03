@@ -8,6 +8,10 @@ import Login from "./pages/auth/Login";
 import Register from "./pages/auth/Register";
 import ForgotPassword from "./pages/auth/ForgotPassword";
 import Dashboard from "./pages/Dashboard";
+import Trips from "./pages/trips/Trips";
+import CreateTrip from "./pages/trips/CreateTrip";
+import TripDetails from "./pages/trips/TripDetails";
+import TripItinerary from "./pages/trips/TripItinerary";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -24,6 +28,10 @@ const App = () => (
           <Route path="/auth/register" element={<Register />} />
           <Route path="/auth/forgot-password" element={<ForgotPassword />} />
           <Route path="/dashboard" element={<Dashboard />} />
+          <Route path="/trips" element={<Trips />} />
+          <Route path="/trips/create" element={<CreateTrip />} />
+          <Route path="/trips/:id" element={<TripDetails />} />
+          <Route path="/trips/:id/itinerary" element={<TripItinerary />} />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />
         </Routes>

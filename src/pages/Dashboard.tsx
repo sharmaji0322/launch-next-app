@@ -4,7 +4,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
 import { User } from "@supabase/supabase-js";
-import { Loader2 } from "lucide-react";
+import { Loader2, Plus, Calendar, Search, MapPin } from "lucide-react";
 
 const Dashboard = () => {
   const navigate = useNavigate();
@@ -73,17 +73,57 @@ const Dashboard = () => {
       </header>
 
       <main className="container mx-auto px-4 py-12">
-        <div className="max-w-4xl mx-auto">
-          <h2 className="font-heading text-3xl font-bold mb-4">
-            Welcome to Your Dashboard
-          </h2>
-          <p className="text-muted-foreground mb-8">
-            You're logged in as: <strong>{user?.email}</strong>
-          </p>
-          
-          <div className="rounded-lg border p-8 text-center">
-            <p className="text-lg text-muted-foreground">
-              Dashboard features coming soon! Start planning your next adventure.
+        <div className="max-w-6xl mx-auto space-y-8">
+          <div>
+            <h2 className="font-heading text-3xl font-bold mb-2">
+              Welcome Back!
+            </h2>
+            <p className="text-muted-foreground">
+              {user?.email}
+            </p>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <div className="rounded-lg border p-6">
+              <h3 className="text-lg font-semibold mb-2">Upcoming Trips</h3>
+              <p className="text-3xl font-bold text-primary">0</p>
+              <p className="text-sm text-muted-foreground mt-1">Plan your next adventure</p>
+            </div>
+            <div className="rounded-lg border p-6">
+              <h3 className="text-lg font-semibold mb-2">Saved Places</h3>
+              <p className="text-3xl font-bold text-primary">0</p>
+              <p className="text-sm text-muted-foreground mt-1">Discover new destinations</p>
+            </div>
+            <div className="rounded-lg border p-6">
+              <h3 className="text-lg font-semibold mb-2">Recent Activities</h3>
+              <p className="text-3xl font-bold text-primary">0</p>
+              <p className="text-sm text-muted-foreground mt-1">Track your journey</p>
+            </div>
+          </div>
+
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+            <Button onClick={() => navigate("/trips/create")} className="h-24 flex-col gap-2">
+              <Plus className="h-6 w-6" />
+              New Trip
+            </Button>
+            <Button onClick={() => navigate("/trips")} variant="outline" className="h-24 flex-col gap-2">
+              <Calendar className="h-6 w-6" />
+              My Trips
+            </Button>
+            <Button variant="outline" className="h-24 flex-col gap-2">
+              <Search className="h-6 w-6" />
+              Search
+            </Button>
+            <Button variant="outline" className="h-24 flex-col gap-2">
+              <MapPin className="h-6 w-6" />
+              Discover
+            </Button>
+          </div>
+
+          <div className="rounded-lg border p-6">
+            <h3 className="text-xl font-semibold mb-4">Recent Activities</h3>
+            <p className="text-muted-foreground text-center py-8">
+              No recent activities. Start planning your first trip!
             </p>
           </div>
         </div>

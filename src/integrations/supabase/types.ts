@@ -14,6 +14,59 @@ export type Database = {
   }
   public: {
     Tables: {
+      itinerary_items: {
+        Row: {
+          created_at: string
+          day_number: number
+          description: string | null
+          end_time: string
+          id: string
+          location: string | null
+          notes: string | null
+          order_index: number
+          start_time: string
+          title: string
+          trip_id: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          day_number: number
+          description?: string | null
+          end_time: string
+          id?: string
+          location?: string | null
+          notes?: string | null
+          order_index?: number
+          start_time: string
+          title: string
+          trip_id: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          day_number?: number
+          description?: string | null
+          end_time?: string
+          id?: string
+          location?: string | null
+          notes?: string | null
+          order_index?: number
+          start_time?: string
+          title?: string
+          trip_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "itinerary_items_trip_id_fkey"
+            columns: ["trip_id"]
+            isOneToOne: false
+            referencedRelation: "trips"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       profiles: {
         Row: {
           created_at: string | null
@@ -35,6 +88,53 @@ export type Database = {
         }
         Relationships: []
       }
+      trips: {
+        Row: {
+          created_at: string
+          destination: string
+          end_date: string
+          id: string
+          is_private: boolean
+          name: string
+          start_date: string
+          trip_type: Database["public"]["Enums"]["trip_type"]
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          destination: string
+          end_date: string
+          id?: string
+          is_private?: boolean
+          name: string
+          start_date: string
+          trip_type?: Database["public"]["Enums"]["trip_type"]
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          destination?: string
+          end_date?: string
+          id?: string
+          is_private?: boolean
+          name?: string
+          start_date?: string
+          trip_type?: Database["public"]["Enums"]["trip_type"]
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "trips_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Views: {
       [_ in never]: never
@@ -43,7 +143,7 @@ export type Database = {
       [_ in never]: never
     }
     Enums: {
-      [_ in never]: never
+      trip_type: "vacation" | "business" | "adventure"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -170,6 +270,8 @@ export type CompositeTypes<
 
 export const Constants = {
   public: {
-    Enums: {},
+    Enums: {
+      trip_type: ["vacation", "business", "adventure"],
+    },
   },
 } as const
